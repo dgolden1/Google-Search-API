@@ -1,6 +1,6 @@
-from __future__ import unicode_literals
 
-from utils import get_html
+
+from .utils import get_html
 from bs4 import BeautifulSoup
 
 

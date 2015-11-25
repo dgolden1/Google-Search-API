@@ -1,6 +1,6 @@
-from __future__ import unicode_literals
 
-from utils import get_html, normalize_query
+
+from .utils import get_html, normalize_query
 from bs4 import BeautifulSoup
 import re
 from unidecode import unidecode

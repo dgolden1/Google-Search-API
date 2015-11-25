@@ -1,9 +1,9 @@
-from __future__ import unicode_literals
 
-from utils import _get_search_url, get_html
+
+from .utils import _get_search_url, get_html
 from bs4 import BeautifulSoup
-import urlparse
-from urllib2 import unquote
+import urllib.parse
+from urllib.parse import unquote
 from unidecode import unidecode
 from re import match
 
@@ -115,7 +115,7 @@ def _get_google_link(li):
     link = a["href"]
 
     if link.startswith("/url?") or link.startswith("/search?"):
-        return urlparse.urljoin("http://www.google.com", link)
+        return urllib.parse.urljoin("http://www.google.com", link)
 
     else:
         return None
@@ -147,5 +147,5 @@ def _get_cached(li):
     if len(links) > 1 and links[1].text == "Cached":
         link = links[1]["href"]
         if link.startswith("/url?") or link.startswith("/search?"):
-            return urlparse.urljoin("http://www.google.com", link)
+            return urllib.parse.urljoin("http://www.google.com", link)
     return None

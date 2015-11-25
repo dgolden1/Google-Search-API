@@ -1,15 +1,16 @@
-from __future__ import unicode_literals
+
 from unidecode import unidecode
 
-from utils import get_browser_with_url, write_html_to_file, measure_time
+from .utils import get_browser_with_url, write_html_to_file, measure_time
 from bs4 import BeautifulSoup
-import urlparse
+import urllib.parse
 import sys
+import re
 import requests
 import shutil
 import os
 import threading
-import Queue
+import queue
 
 
 IMAGE_FORMATS = ["bmp", "gif", "jpg", "png", "psd", "pspimage", "thm",
@@ -166,13 +167,13 @@ class ImageResult:
                     shutil.copyfileobj(response.raw, output_file)
                     # output_file.write(response.content)
             else:
-                print "\r\rskiped! cached image"
+                print("\r\rskiped! cached image")
 
             del response
 
         except Exception as inst:
-            print self.link, "has failed:"
-            print inst
+            print(self.link, "has failed:")
+            print(inst)
 
     def _get_path_filename(self, path):
         """Build the filename to download.
@@ -311,8 +312,8 @@ def _get_image_data(res, a):
         a: An "a" html tag.
     """
     google_middle_link = a["href"]
-    url_parsed = urlparse.urlparse(google_middle_link)
-    qry_parsed = urlparse.parse_qs(url_parsed.query)
+    url_parsed = urllib.parse.urlparse(google_middle_link)
+    qry_parsed = urllib.parse.parse_qs(url_parsed.query)
     res.name = _get_name()
     res.link = qry_parsed["imgurl"][0]
     res.file_name = _get_file_name(res.link)
@@ -320,7 +321,7 @@ def _get_image_data(res, a):
     res.width = qry_parsed["w"][0]
     res.height = qry_parsed["h"][0]
     res.site = qry_parsed["imgrefurl"][0]
-    res.domain = urlparse.urlparse(res.site).netloc
+    res.domain = urllib.parse.urlparse(res.site).netloc
     res.filesize = _get_filesize()
 
 
@@ -343,7 +344,7 @@ def _get_thumb_data(res, img):
         res.thumb_height = img_style_dict["height"]
     except:
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        print exc_type, exc_value, "index=", res.index
+        print(exc_type, exc_value, "index=", res.index)
 
 
 # PUBLIC
@@ -360,7 +361,7 @@ def search_old(query, image_options=None, pages=1):
             soup = BeautifulSoup(html)
             match = re.search("dyn.setResults\((.+)\);</script>", html)
             if match:
-                init = unicode(match.group(1), errors="ignore")
+                init = str(match.group(1), errors="ignore")
                 tokens = init.split('],[')
                 for token in tokens:
                     res = ImageResult()
@@ -488,7 +489,7 @@ def download(image_results, path=None):
 
         progress = "".join(["Downloading image ", str(i),
                             " (", str(total_images), ")"])
-        print progress
+        print(progress)
         sys.stdout.flush()
 
         _download_image(image_result, path)
@@ -514,7 +515,7 @@ class ThreadUrl(threading.Thread):
             counter = self.total - self.queue.qsize()
             progress = "".join(["Downloading image ", str(counter),
                                 " (", str(self.total), ")"])
-            print progress
+            print(progress)
             sys.stdout.flush()
             _download_image(image_result, self.path)
 
@@ -525,7 +526,7 @@ class ThreadUrl(threading.Thread):
 @measure_time
 def fast_download(image_results, path=None, threads=10):
     # print path
-    queue = Queue.Queue()
+    queue = queue.Queue()
     total = len(image_results)
 
     for image_result in image_results:
