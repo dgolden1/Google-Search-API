@@ -141,7 +141,7 @@ class ImageResult:
 
     def __repr__(self):
         string = "ImageResult(" + \
-                 "index={}, page={}, ".format(unidecode(self.index), unidecode(self.page)) + \
+                 "index={}, page={}, ".format(self.index, self.page) + \
                  "domain={}, link={})".format(unidecode(self.domain), unidecode(self.link))
         return string
 
@@ -284,8 +284,17 @@ def _find_divs_with_images(soup):
 
 def _get_file_name(link):
 
-    temp_name = link.rsplit('/', 1)[1]
+    # temp_name = link.rsplit('/', 1)[1]
     image_format = _parse_image_format(link)
+    if not image_format:
+        # Unable to determine image format; URL has no obvious filename
+        return None
+    matches = re.search(r'/([^/]+\.%s)' % image_format, link)
+    if not matches:
+        # URL probably has a weird format, e.g., like
+        # img-thing%3F.out%3Djpg%26size%3Dl%26tid%3D41442350
+        return None
+    temp_name = matches.groups()[0]
 
     if image_format and temp_name.rsplit(".", 1)[1] != image_format:
         file_name = temp_name.rsplit(".", 1)[0] + "." + image_format
@@ -358,7 +367,7 @@ def search_old(query, image_options=None, pages=1):
                 write_html_to_file(
                     html, "images_{0}_{1}.html".format(query.replace(" ", "_"), i))
             j = 0
-            soup = BeautifulSoup(html)
+            soup = BeautifulSoup(html, 'lxml')
             match = re.search("dyn.setResults\((.+)\);</script>", html)
             if match:
                 init = str(match.group(1), errors="ignore")
@@ -424,7 +433,7 @@ def search(query, image_options=None, num_images=50):
         html = browser.page_source
 
         if html:
-            soup = BeautifulSoup(html)
+            soup = BeautifulSoup(html, 'lxml')
 
             # iterate over the divs containing images in one page
             divs = _find_divs_with_images(soup)
